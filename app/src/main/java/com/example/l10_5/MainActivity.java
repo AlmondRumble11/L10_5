@@ -7,9 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -27,23 +25,23 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    Button haku;
-    int indeksi = 0;
-    int testeri_ala = 1;
-    int testeri_yla = 1;
-    int on_painettu = 0;
-    EditText url;
-    String osoite = "";
-    String aikasempi_osoite;
-    String aikasempi = "https://www.google.com/?gws_rd=ssl";
-    WebView web;
-    String edellinen_sivu;
-    String seuraava_sivu;
-    List<String> edellinen = new ArrayList<String>(20);
-    //List<String> seuraava = new ArrayList<String>(10);
-    int ticket=0;
-    int ticket2 = 0;
-    int ticket3 = 0;
+    private Button haku;
+    private int indeksi = 0; // listan indeksi
+    private int testeri_ala = 0; // ala rajan testaus ewttä ei mene yli 10, tosin se ei tule koskaan menemään kun päätyy aina viimeiselle sivulle
+    private int testeri_yla = 0; //ylä rajan testaus ewttä ei mene yli 10
+    private int on_painettu = 0; // jos on menty taaksepäin ja ollaan tehty haku. Laittaa taas päälle onPageFinished, jotta listaan voidaan lisätä urlja
+    private EditText url;
+    private String osoite = "";
+    private String aikasempi_osoite;
+    private String aikasempi = "https://www.google.com/?gws_rd=ssl";
+    private WebView web;
+    //private String edellinen_sivu;
+    //private String seuraava_sivu;
+    private List<String> edellinen = new ArrayList<String>(20);
+    private int koko;
+    private int ticket;
+    private int ticket2 = 0;
+    private int ticket3 = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,8 +77,9 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("\n\nListan koko: "+edellinen.size()+ " ja indeksi on:  "+indeksi+"\n\n\n");
 
                 if (webUrl.equals(aikasempi)){
-
+                        System.out.println(aikasempi);
                 }else {
+
                     aikasempi = webUrl;
                     //System.out.println("url on: "+ webUrl);
                     if ((ticket3 == 0) && (indeksi < edellinen.size())) {
@@ -90,23 +89,33 @@ public class MainActivity extends AppCompatActivity {
                         aikasempi_osoite = osoite;
                     }
 
-                    for (int b=0;b<edellinen.size();b++){
+                    /*for (int b=0;b<edellinen.size();b++){
                         System.out.println("numerot: "+b+" ja url: "+edellinen.get(b));
-                    }
-
+                    }*/
+                }
+                for (int b=0;b<edellinen.size();b++){
+                    System.out.println("numerot: "+b+" ja url: "+edellinen.get(b));
                 }
 
-                //Toast.makeText(getApplicationContext(), url,Toast.LENGTH_LONG).show();
             }
         });
 
     }
     public void hae(View v){
-
+        System.out.println("Indeksi on "+indeksi);
+        System.out.println("Listankoko on "+edellinen.size());
         if ((indeksi+1) < edellinen.size()){
-            for (int o=indeksi+1;o<=edellinen.size();o++){
-                edellinen.remove(o);
+            indeksi++;
+            koko = edellinen.size();
+            Iterator iter = edellinen.iterator();
+            for (int o=indeksi+1;o<=koko;o++){
+                //System.out.println(edellinen.get(o));
+                System.out.println(edellinen.size()-1);
+                System.out.println("Listankoko on "+edellinen.size());
+                edellinen.remove(edellinen.size()-1);
             }
+            testeri_ala = 0;
+            testeri_yla = 0;
         }
             if (osoite.equals("index.html")) {
                 /*if (edellinen.size() > 1){
@@ -115,22 +124,23 @@ public class MainActivity extends AppCompatActivity {
                 edellinen_sivu = "file:///android_asset/index.html";
                 //edellinen.add("file:///android_asset/index.html");*/
             }else {
-                edellinen_sivu = web.getUrl();
+
                 //edellinen.add(web.getUrl());
             }
-
+        System.out.println(edellinen);
         if (on_painettu == 1) {
             ticket3 = 0;
+            ticket = 1;
+            edellinen.add("http://"+osoite);
         }
         osoite = url.getText().toString();
-        aikasempi_osoite = osoite;
+        aikasempi_osoite = "https://www."+osoite;
         web.loadUrl("http://"+osoite);
         url.setText("");
         if (osoite.equals("index.html")) {
             web.loadUrl("file:///android_asset/index.html");
         }
         ticket2 = 0;
-
         //sulje näppäimistö
         try {
             InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
@@ -152,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
             web.goBack();
 
         }*/
+        System.out.println(indeksi);
         if (testeri_ala == 10){
             Toast.makeText(getApplicationContext(), "You can only go back 10 pages", Toast.LENGTH_SHORT).show();
         }else {
@@ -159,9 +170,9 @@ public class MainActivity extends AppCompatActivity {
 
                 if ((edellinen.size() > 1) && (indeksi > 0)) {
                     indeksi--;
-                }
-                web.loadUrl(edellinen.get(indeksi));
 
+                }
+            web.loadUrl(edellinen.get(indeksi));
             on_painettu = 1;
             testeri_ala ++;
             testeri_yla --;
